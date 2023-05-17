@@ -10,6 +10,7 @@ function Home() {
   return (
     <>
       <div>profile</div>
+      <img src={userData.profile}></img>
       <p>{userData.name}</p>
       <p>{userData.email}</p>
       <p>{userData.number}</p>

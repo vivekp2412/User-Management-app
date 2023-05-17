@@ -3,6 +3,8 @@ import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import * as yup from "yup";
 import "./Signuppage.css";
+import { loginUser } from "../../slices/userSlices";
+import { useDispatch } from "react-redux";
 interface formdata {
   name: string;
   email: string;
@@ -18,6 +20,25 @@ const initialValues = {
   phonenumber: "",
   profile: "",
 };
+function checkIfFilesAreCorrectType(files): boolean {
+  let valid = true
+  if (files) {
+      if (!['image/jpg', 'image/jpeg', 'image/png'].includes(files.type)) {
+        valid = false
+      }
+  }
+  return valid
+}
+function checkIfFilesAreTooBig(files): boolean {
+  let valid = true
+  if (files) {
+      const size = files.size / 1024 / 1024
+      if (size > 5) {
+        valid = false
+      }
+  }
+  return valid
+}
 const userList = JSON.parse(localStorage.getItem("userList")) || [];
 
 const validationSchema = yup.object().shape({
@@ -39,26 +60,30 @@ const validationSchema = yup.object().shape({
     .mixed()
     .required("Required !")
     .test(
-      "FILE_FORMAT",
-      "invalid !",
-      (value) => ["image/png", "image/jpeg", "image/jpg"].includes[value.type]
-    )
-    .test("FILE_SIZE", "TOO BIG", (value) => value.size <= 2 * 1024 * 1024),
+      "FILE_TYPE",
+      "Invalid File Format! (Only Png,jpeg,jpg allowed)",
+     checkIfFilesAreCorrectType
+      )
+    .test("FILE_SIZE", "Too Big! Image only upto 2mb allowed", checkIfFilesAreTooBig),
 });
 
 function Signupform() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const imgref = useRef();
   const [imgUrl, setImgurl] = useState();
   function navigateToLogin() {
     navigate("/login");
   }
   function onSubmit(values, { resetForm }) {
+    values.profile=imgUrl;
     userList.push(values);
     localStorage.setItem("userList", JSON.stringify(userList));
     resetForm();
     imgref.current.value = null;
     setImgurl("");
+    navigate("/");
+    dispatch(loginUser({email:values.email,password:values.password}))
   }
   return (
     <>
@@ -88,8 +113,10 @@ function Signupform() {
                     let image = e.target.files![0];
                     formik.setFieldValue("profile", image);
                     let reader = new FileReader();
-                    reader.readAsDataURL(image);
+                    reader.readAsDataURL(e.target.files[0]);
                     reader.addEventListener("load", () => {
+                      console.log(reader.result);
+                      
                       setImgurl(reader.result);
                     });
                   }}
