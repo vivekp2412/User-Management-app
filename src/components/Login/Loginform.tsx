@@ -1,7 +1,10 @@
-import { ErrorMessage, Field, Form, Formik } from "formik";
+import { ErrorMessage, Field, Form, Formik, useFormikContext } from "formik";
 import { Navigate, useNavigate } from "react-router";
 import * as yup from "yup";
 import "../Signup/Signuppage.css";
+import { loginUser } from "../../slices/userSlices";
+import { useDispatch } from "react-redux";
+import { useState } from "react";
 interface formdata {
   email: string;
   password: string;
@@ -10,34 +13,44 @@ const initialValues = {
   email: "",
   password: "",
 };
-function onSubmit(values) {
-  console.log(values);
-}
 const validationSchema = yup.object().shape({
-  name: yup
-    .string()
-    .required("Required !")
-    .min(15, "Atleast 15 Chars required"),
   email: yup.string().email("Invalid Email").required("Required"),
   password: yup.string().required("Required !"),
-  confirmpassword: yup
-    .string()
-    .required("Required !")
-    .oneOf([yup.ref("password"), ""], "Password match not found"),
-  phonenumber: yup
-    .string()
-    .matches(/^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/, "Invalid phone number")
-    .required("Phone number is required !"),
 });
-
-function Signupform() {
+function Loginform() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [invalidcredentials, setInvalidcredentials] = useState(false);
   function navigateToSignup() {
     navigate("/Signup");
+  }
+
+  function onSubmit(values, { resetForm }) {
+    let userList = JSON.parse(localStorage.getItem("userList"));
+    let user = userList.filter(
+      (user) => user.email === values.email && user.password === values.password
+    );
+    if (user.length != 0) {
+      dispatch(loginUser(values));
+      navigate("/");
+    } else {
+      setInvalidcredentials(true);
+      setTimeout(() => setInvalidcredentials(false), 2000);
+      navigate("/login");
+    }
+    resetForm();
   }
   return (
     <>
       <div className="form-title">Login</div>
+      <p
+        className={
+          invalidcredentials ? "error-message show" : "error-message hide"
+        }
+      >
+        {" "}
+        Invalid Credentails
+      </p>
       <Formik
         initialValues={initialValues}
         onSubmit={onSubmit}
@@ -96,4 +109,4 @@ function Signupform() {
   );
 }
 
-export default Signupform;
+export default Loginform;

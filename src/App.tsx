@@ -4,25 +4,43 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 import image from "../src/assets/signupimage.png";
 import Signuppage from "./components/Signup/Signuppage";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  BrowserRouter,
+  createBrowserRouter,
+  Navigate,
+  Route,
+  RouterProvider,
+  Routes,
+} from "react-router-dom";
 import Login from "./components/Login/Loginpage";
 import Loginpage from "./components/Login/Loginpage";
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Signuppage />,
-  },
-  {
-    path: "/signup",
-    element: <Signuppage />,
-  },
-  {
-    path: "/login",
-    element: <Loginpage />,
-  },
-]);
+import Home from "./components/Home/Home";
+// import Protected from "./Protected";
+import { useSelector } from "react-redux";
+
 function App() {
-  return <RouterProvider router={router}></RouterProvider>;
+  const isloggedin = useSelector((state) => state.user.isloggedin);
+
+  return (
+    <div className="App">
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/"
+            element={isloggedin ? <Home /> : <Navigate to="/login" />}
+          ></Route>
+          <Route
+            path="/signup"
+            element={!isloggedin ? <Signuppage /> : <Navigate to="/" />}
+          ></Route>
+          <Route
+            path="/login"
+            element={!isloggedin ? <Loginpage /> : <Navigate to="/" />}
+          ></Route>
+        </Routes>
+      </BrowserRouter>
+    </div>
+  );
 }
 
 export default App;

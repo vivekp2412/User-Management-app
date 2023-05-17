@@ -77,3 +77,9 @@
 .instruction {
   text-align: center;
 }
+.hide {
+  visibility: hidden;
+}
+.show {
+  visibility: visible;
+}

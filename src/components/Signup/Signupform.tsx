@@ -1,4 +1,5 @@
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import * as yup from "yup";
 import "./Signuppage.css";
@@ -17,9 +18,8 @@ const initialValues = {
   phonenumber: "",
   profile: "",
 };
-function onSubmit(values) {
-  console.log(values);
-}
+const userList = JSON.parse(localStorage.getItem("userList")) || [];
+
 const validationSchema = yup.object().shape({
   name: yup
     .string()
@@ -39,7 +39,7 @@ const validationSchema = yup.object().shape({
     .mixed()
     .required("Required !")
     .test(
-      "FILE_TYPE",
+      "FILE_FORMAT",
       "invalid !",
       (value) => ["image/png", "image/jpeg", "image/jpg"].includes[value.type]
     )
@@ -48,8 +48,17 @@ const validationSchema = yup.object().shape({
 
 function Signupform() {
   const navigate = useNavigate();
+  const imgref = useRef();
+  const [imgUrl, setImgurl] = useState();
   function navigateToLogin() {
     navigate("/login");
+  }
+  function onSubmit(values, { resetForm }) {
+    userList.push(values);
+    localStorage.setItem("userList", JSON.stringify(userList));
+    resetForm();
+    imgref.current.value = null;
+    setImgurl("");
   }
   return (
     <>
@@ -66,14 +75,24 @@ function Signupform() {
                 <label htmlFor="profile" className="form-label center">
                   + Photo
                 </label>
+                <img src={imgUrl}></img>
                 <input
+                  ref={imgref}
                   type="file"
                   name="profile"
                   id="profile"
+                  size={0.05 * 1024 * 1024}
+                  // hidden
                   className="form-field"
-                  onChange={(e) =>
-                    formik.setFieldValue("profile", e.target.files![0])
-                  }
+                  onChange={(e) => {
+                    let image = e.target.files![0];
+                    formik.setFieldValue("profile", image);
+                    let reader = new FileReader();
+                    reader.readAsDataURL(image);
+                    reader.addEventListener("load", () => {
+                      setImgurl(reader.result);
+                    });
+                  }}
                 />
                 <ErrorMessage name="profile">
                   {(msg) => <div className="error-message">{msg}</div>}
