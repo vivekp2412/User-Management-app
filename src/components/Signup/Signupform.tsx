@@ -1,4 +1,4 @@
-import { ErrorMessage, Field, Form, Formik } from "formik";
+import { ErrorMessage, Field, Form, Formik,FormikHelpers,FormikProps } from "formik";
 import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import * as yup from "yup";
@@ -12,15 +12,27 @@ interface formdata {
   email: string;
   password: string;
   confirmpassword: string;
-  phonenumber: number;
+  phonenumber: string;
+}
+interface MyFormProps extends FormikProps<formdata>{
+  reset:()=>{}
 }
 interface Usertype {
   name: string;
   email: string;
   password: string;
+  confirmpassword:string
   phonenumber: string;
   profile: string;
 }
+// interface Filetype{
+//   size:number,
+//   name:string,
+//   type:string,
+//   webkitRelativePath:string,
+//   lastModified:number,
+//   lastModifiedDate:Date
+// }
 
 const initialValues = {
   name: "",
@@ -30,7 +42,7 @@ const initialValues = {
   phonenumber: "",
   profile: "",
 };
-function checkIfFilesAreCorrectType(files): boolean {
+function checkIfFilesAreCorrectType(files:File): boolean {
   let valid = true;
   if (files) {
     if (!["image/jpg", "image/jpeg", "image/png"].includes(files.type)) {
@@ -39,7 +51,8 @@ function checkIfFilesAreCorrectType(files): boolean {
   }
   return valid;
 }
-function checkIfFilesAreTooBig(files): boolean {
+function checkIfFilesAreTooBig(files:File): boolean {
+  console.log(files)
   let valid = true;
   if (files) {
     const size = files.size / 1024 / 1024;
@@ -74,26 +87,34 @@ const validationSchema = yup.object().shape({
     .test(
       "FILE_TYPE",
       "Invalid File Format! (Only Png,jpeg,jpg allowed)",
-      checkIfFilesAreCorrectType
+      (value)=>{
+        if(value instanceof File){
+          return checkIfFilesAreCorrectType(value)
+        }
+      }
     )
     .test(
       "FILE_SIZE",
       "Too Big! Image only upto 2mb allowed",
-      checkIfFilesAreTooBig
+      (value)=>{
+        if(value instanceof File){
+          return checkIfFilesAreTooBig(value)
+        }
+      }
     ),
 });
 
 function Signupform() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const imgref = useRef();
-  const [imgUrl, setImgurl] = useState<String>()!;
+  const imgref:React.MutableRefObject<HTMLInputElement | null> = useRef<HTMLInputElement>(null);
+  const [imgUrl, setImgurl] = useState<string>("")!;
   const [showprevimg, setShowprevimg] = useState(false);
   const [userExist, setUserexist] = useState(false);
   function navigateToLogin() {
     navigate("/login");
   }
-  function onSubmit(values: Usertype, { resetForm }) {
+  function onSubmit(values: Usertype, { resetForm }:FormikHelpers<Usertype>) {
     let userList: Usertype[] =
       JSON.parse(localStorage.getItem("userList")!) || [];
     setUserexist(false);
@@ -119,7 +140,7 @@ function Signupform() {
       dispatch(signinUser(values));
       navigate("/");
       dispatch(loginUser({ email: values.email, password: values.password }));
-      imgref.current!.value = null;
+      imgref.current!.value = "";
       resetForm();
       setImgurl("");
     }
@@ -153,9 +174,11 @@ function Signupform() {
                     let image = e.target.files![0];
                     formik.setFieldValue("profile", image);
                     let reader = new FileReader();
-                    reader.readAsDataURL(e.target.files[0]);
+                    reader.readAsDataURL(e.target.files![0]);
                     reader.addEventListener("load", () => {
-                      setImgurl(reader.result);
+                      if(typeof reader.result ==="string"){
+                        setImgurl(reader.result);
+                      }
                     });
                   }}
                 />
