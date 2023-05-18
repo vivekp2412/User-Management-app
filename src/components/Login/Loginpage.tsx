@@ -4,9 +4,21 @@ import "../Signup/Signuppage.css";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
+interface Statetype {
+  user: {
+    isloggedin: false;
+    userinfo: {
+      name: string;
+      email: string;
+      password: string;
+      phonenumber: string;
+      profile: string;
+    };
+  };
+}
 function Loginpage() {
   const navigate = useNavigate();
-  const isLogged = useSelector((state) => state.user.isloggedin);
+  const isLogged = useSelector((state: Statetype) => state.user.isloggedin);
   return (
     <div className="login-layout">
       <div className="login-form-container">

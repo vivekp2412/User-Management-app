@@ -1,16 +1,23 @@
 import { createSlice } from "@reduxjs/toolkit";
-const initialState = JSON.parse(localStorage.getItem("userData")) || {
+interface Usertype {
+  name: string;
+  email: string;
+  password: string;
+  phonenumber: string;
+  profile: string;
+}
+const initialState = JSON.parse(localStorage.getItem("userData")!) || {
   isloggedin: false,
   userinfo: {},
 };
-const userList = JSON.parse(localStorage.getItem("userList"));
+const userList: Usertype[] =
+  JSON.parse(localStorage.getItem("userList")!) || [];
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
     loginUser(state, action) {
-      console.log(action);
-      userList.map((user) => {
+      userList.map((user: Usertype) => {
         if (user.email === action.payload.email) {
           state.userinfo = user;
           state.isloggedin = true;
@@ -19,12 +26,14 @@ const userSlice = createSlice({
       localStorage.setItem("userData", JSON.stringify(state));
     },
     logoutUser(state) {
-      console.log("logged out");
       (state.userinfo = {}), (state.isloggedin = false);
-      console.log(state.userinfo);
       localStorage.setItem("userData", JSON.stringify(state));
+    },
+    signinUser(state, action) {
+      userList.push(action.payload);
+      localStorage.setItem("userList", JSON.stringify(userList));
     },
   },
 });
-export const { loginUser, logoutUser } = userSlice.actions;
+export const { loginUser, logoutUser, signinUser } = userSlice.actions;
 export default userSlice.reducer;

@@ -3,8 +3,10 @@ import { useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import * as yup from "yup";
 import "./Signuppage.css";
-import { loginUser } from "../../slices/userSlices";
+import { loginUser, signinUser } from "../../slices/userSlices";
 import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+
 interface formdata {
   name: string;
   email: string;
@@ -12,6 +14,14 @@ interface formdata {
   confirmpassword: string;
   phonenumber: number;
 }
+interface Usertype {
+  name: string;
+  email: string;
+  password: string;
+  phonenumber: string;
+  profile: string;
+}
+
 const initialValues = {
   name: "",
   email: "",
@@ -21,72 +31,101 @@ const initialValues = {
   profile: "",
 };
 function checkIfFilesAreCorrectType(files): boolean {
-  let valid = true
+  let valid = true;
   if (files) {
-      if (!['image/jpg', 'image/jpeg', 'image/png'].includes(files.type)) {
-        valid = false
-      }
+    if (!["image/jpg", "image/jpeg", "image/png"].includes(files.type)) {
+      valid = false;
+    }
   }
-  return valid
+  return valid;
 }
 function checkIfFilesAreTooBig(files): boolean {
-  let valid = true
+  let valid = true;
   if (files) {
-      const size = files.size / 1024 / 1024
-      if (size > 5) {
-        valid = false
-      }
+    const size = files.size / 1024 / 1024;
+    if (size > 5) {
+      valid = false;
+    }
   }
-  return valid
+  return valid;
 }
-const userList = JSON.parse(localStorage.getItem("userList")) || [];
 
 const validationSchema = yup.object().shape({
   name: yup
     .string()
-    .required("Required !")
+    .required("Name Required !")
     .min(15, "Atleast 15 Chars required"),
-  email: yup.string().email("Invalid Email").required("Required"),
-  password: yup.string().required("Required !"),
+  email: yup.string().email("Invalid Email").required("Email Required"),
+  password: yup
+    .string()
+    .required("Password Required !")
+    .min(8, "Password Must be of 8 Character"),
   confirmpassword: yup
     .string()
-    .required("Required !")
+    .required("Confirm password Field Required !")
     .oneOf([yup.ref("password"), ""], "Password match not found"),
   phonenumber: yup
     .string()
     .matches(/^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/, "Invalid phone number")
-    .required("Phone number is required !"),
+    .required("Phone Number Required !"),
   profile: yup
     .mixed()
-    .required("Required !")
+    .required(" Image Required !")
     .test(
       "FILE_TYPE",
       "Invalid File Format! (Only Png,jpeg,jpg allowed)",
-     checkIfFilesAreCorrectType
-      )
-    .test("FILE_SIZE", "Too Big! Image only upto 2mb allowed", checkIfFilesAreTooBig),
+      checkIfFilesAreCorrectType
+    )
+    .test(
+      "FILE_SIZE",
+      "Too Big! Image only upto 2mb allowed",
+      checkIfFilesAreTooBig
+    ),
 });
 
 function Signupform() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const imgref = useRef();
-  const [imgUrl, setImgurl] = useState();
+  const [imgUrl, setImgurl] = useState<String>()!;
+  const [showprevimg, setShowprevimg] = useState(false);
+  const [userExist, setUserexist] = useState(false);
   function navigateToLogin() {
     navigate("/login");
   }
-  function onSubmit(values, { resetForm }) {
-    values.profile=imgUrl;
-    userList.push(values);
-    localStorage.setItem("userList", JSON.stringify(userList));
-    resetForm();
-    imgref.current.value = null;
-    setImgurl("");
-    navigate("/");
-    dispatch(loginUser({email:values.email,password:values.password}))
+  function onSubmit(values: Usertype, { resetForm }) {
+    let userList: Usertype[] =
+      JSON.parse(localStorage.getItem("userList")!) || [];
+    setUserexist(false);
+    let user = userList.filter((user) => user.email === values.email);
+    console.log(user);
+
+    if (user.length != 0) {
+      setUserexist(true);
+      toast.error("User Already exist", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      setTimeout(() => setUserexist(false), 2000);
+    } else {
+      console.log("hi");
+      values.profile = imgUrl;
+      dispatch(signinUser(values));
+      navigate("/");
+      dispatch(loginUser({ email: values.email, password: values.password }));
+      imgref.current!.value = null;
+      resetForm();
+      setImgurl("");
+    }
   }
   return (
-    <>
+    <div>
       <div className="form-title">Sign up</div>
       <Formik
         initialValues={initialValues}
@@ -97,26 +136,25 @@ function Signupform() {
           return (
             <Form>
               <div className="form-control">
+                <img className="prev-img" src={imgUrl}></img>
                 <label htmlFor="profile" className="form-label center">
                   + Photo
                 </label>
-                <img src={imgUrl}></img>
                 <input
                   ref={imgref}
                   type="file"
                   name="profile"
                   id="profile"
                   size={0.05 * 1024 * 1024}
-                  // hidden
+                  hidden
                   className="form-field"
                   onChange={(e) => {
+                    setShowprevimg(true);
                     let image = e.target.files![0];
                     formik.setFieldValue("profile", image);
                     let reader = new FileReader();
                     reader.readAsDataURL(e.target.files[0]);
                     reader.addEventListener("load", () => {
-                      console.log(reader.result);
-                      
                       setImgurl(reader.result);
                     });
                   }}
@@ -190,7 +228,7 @@ function Signupform() {
                   Phone number
                 </label>
                 <Field
-                  type="number"
+                  type="text"
                   name="phonenumber"
                   id="phonenumber"
                   className="form-field"
@@ -216,7 +254,7 @@ function Signupform() {
           Login
         </a>
       </p>
-    </>
+    </div>
   );
 }
 
