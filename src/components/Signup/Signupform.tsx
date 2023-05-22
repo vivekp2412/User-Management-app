@@ -78,15 +78,17 @@ const validationSchema = yup.object().shape({
       "FILE_TYPE",
       "Invalid File Format! (Only Png,jpeg,jpg allowed)",
       (value) => {
-        if (value instanceof File) {
-          return checkIfFilesAreCorrectType(value);
+        if (value instanceof File && checkIfFilesAreCorrectType(value)) {
+          return true;
         }
+        return false;
       }
     )
     .test("FILE_SIZE", "Too Big! Image only upto 2mb allowed", (value) => {
-      if (value instanceof File) {
-        return checkIfFilesAreTooBig(value);
+      if (value instanceof File && checkIfFilesAreTooBig(value)) {
+        return true;
       }
+      return false;
     }),
 });
 //Sign up form
@@ -208,7 +210,7 @@ function Signupform() {
                   className="form-field"
                   placeholder="Enter your email"
                 />
-                <FontAwesomeIcon icon={"eye-slash"} />
+
                 <ErrorMessage name="email">
                   {(msg) => <div className="error-message">{msg}</div>}
                 </ErrorMessage>
@@ -223,6 +225,7 @@ function Signupform() {
                   id="password"
                   className="form-field"
                   placeholder="Enter Your Password"
+                  autoComplete="on"
                 />
                 <div className="showpassword" onClick={() => togglepassword()}>
                   <FontAwesomeIcon
@@ -243,6 +246,7 @@ function Signupform() {
                   id="confirmpassword"
                   className="form-field"
                   placeholder="Confirm password"
+                  autoComplete="on"
                 />
                 <ErrorMessage name="confirmpassword">
                   {(msg) => <div className="error-message">{msg}</div>}

@@ -13,7 +13,7 @@ const initialState = JSON.parse(localStorage.getItem("userData")!) || {
   isloggedin: false,
   userinfo: {},
 };
-let userList: Usertype[] = JSON.parse(localStorage.getItem("userList")!);
+let userList: Usertype[] = JSON.parse(localStorage.getItem("userList")!) || [];
 const userSlice = createSlice({
   name: "user",
   initialState,
@@ -35,6 +35,8 @@ const userSlice = createSlice({
       localStorage.setItem("userData", JSON.stringify(state));
     },
     signinUser(state, action) {
+      console.log(action.payload);
+
       userList.push(action.payload);
       localStorage.setItem("userList", JSON.stringify(userList));
     },

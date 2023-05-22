@@ -135,6 +135,7 @@ function Loginform() {
                   id="password"
                   className="form-field"
                   placeholder="Enter your password"
+                  autoComplete="on"
                 />
                 <div className="showpassword" onClick={() => togglepassword()}>
                   <FontAwesomeIcon
