@@ -54,7 +54,7 @@ function Loginform() {
     }
   }
   //login form Submit Handler function
-  function onSubmit(values: Formdata, { resetForm }: FormikHelpers<Usertype>) {
+  function onSubmit(values: Formdata) {
     let userList: Usertype[] = JSON.parse(localStorage.getItem("userList")!);
     let isRegistered: Usertype[] = [];
     if (userList != null) {
@@ -84,7 +84,6 @@ function Loginform() {
       if (userArray.length != 0) {
         dispatch(loginUser(values));
         navigate("/");
-        resetForm();
       } else {
         toast.error("Invalid credential", {
           position: "top-right",
