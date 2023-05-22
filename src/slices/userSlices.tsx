@@ -35,8 +35,6 @@ const userSlice = createSlice({
       localStorage.setItem("userData", JSON.stringify(state));
     },
     signinUser(state, action) {
-      console.log(action.payload);
-
       userList.push(action.payload);
       localStorage.setItem("userList", JSON.stringify(userList));
     },

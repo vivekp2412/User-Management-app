@@ -164,7 +164,6 @@ function Signupform() {
                   type="file"
                   name="profile"
                   id="profile"
-                  // size={2 * 1024 * 1024}
                   hidden
                   className="form-field"
                   onChange={(e) => {
