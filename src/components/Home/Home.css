@@ -12,8 +12,7 @@
   margin: 0 auto;
   display: flex;
   height: 52px;
-  justify-content: space-between;
-  align-content: center;
+  justify-content: space-around;
   align-items: center;
 }
 .logout-btn {
@@ -80,5 +79,21 @@
 .profile-title {
   font-size: 28px;
   font-weight: 900;
-  /* color: plum; */
+}
+.dashboard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+.dashboard-title {
+  color: white;
+  font-size: 20px;
+  font-weight: 900;
+  /* margin: 5px; */
+}
+.dashboard-img {
+  width: 50px;
+  filter: invert();
+  /* margin-left: 2rem; */
 }

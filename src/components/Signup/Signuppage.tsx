@@ -1,6 +1,7 @@
 import image from "../../assets/signupimage.png";
 import Signupform from "./Signupform";
 import "./Signuppage.css";
+//Signup Page Component
 function Signuppage() {
   return (
     <div className="signup-layout">

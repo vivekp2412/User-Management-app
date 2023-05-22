@@ -1,48 +1,35 @@
-import { ErrorMessage, Field, Form, Formik,FormikHelpers,FormikProps } from "formik";
+import { ErrorMessage, Field, Form, Formik, FormikHelpers } from "formik";
 import { useRef, useState } from "react";
-import { Navigate, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import * as yup from "yup";
 import "./Signuppage.css";
 import { loginUser, signinUser } from "../../slices/userSlices";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { openEye } from "../../assets/eye-open.png";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
-interface formdata {
+//Interface to User data
+interface Usertype {
   name: string;
   email: string;
   password: string;
   confirmpassword: string;
   phonenumber: string;
-}
-interface MyFormProps extends FormikProps<formdata>{
-  reset:()=>{}
-}
-interface Usertype {
-  name: string;
-  email: string;
-  password: string;
-  confirmpassword:string
-  phonenumber: string;
   profile: string;
 }
-// interface Filetype{
-//   size:number,
-//   name:string,
-//   type:string,
-//   webkitRelativePath:string,
-//   lastModified:number,
-//   lastModifiedDate:Date
-// }
-
+//Initial Value for Signup Form
 const initialValues = {
   name: "",
   email: "",
   password: "",
   confirmpassword: "",
-  phonenumber: "",
+  phonenumber: "+91",
   profile: "",
 };
-function checkIfFilesAreCorrectType(files:File): boolean {
+//Image type validation function
+function checkIfFilesAreCorrectType(files: File): boolean {
   let valid = true;
   if (files) {
     if (!["image/jpg", "image/jpeg", "image/png"].includes(files.type)) {
@@ -51,18 +38,18 @@ function checkIfFilesAreCorrectType(files:File): boolean {
   }
   return valid;
 }
-function checkIfFilesAreTooBig(files:File): boolean {
-  console.log(files)
+//Image size validation function
+function checkIfFilesAreTooBig(files: File): boolean {
   let valid = true;
   if (files) {
     const size = files.size / 1024 / 1024;
-    if (size > 5) {
+    if (size > 2) {
       valid = false;
     }
   }
   return valid;
 }
-
+//Validation Schema for signup form
 const validationSchema = yup.object().shape({
   name: yup
     .string()
@@ -79,7 +66,10 @@ const validationSchema = yup.object().shape({
     .oneOf([yup.ref("password"), ""], "Password match not found"),
   phonenumber: yup
     .string()
-    .matches(/^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/, "Invalid phone number")
+    .matches(
+      /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/,
+      "Invalid Indian phone number"
+    )
     .required("Phone Number Required !"),
   profile: yup
     .mixed()
@@ -87,39 +77,38 @@ const validationSchema = yup.object().shape({
     .test(
       "FILE_TYPE",
       "Invalid File Format! (Only Png,jpeg,jpg allowed)",
-      (value)=>{
-        if(value instanceof File){
-          return checkIfFilesAreCorrectType(value)
+      (value) => {
+        if (value instanceof File) {
+          return checkIfFilesAreCorrectType(value);
         }
       }
     )
-    .test(
-      "FILE_SIZE",
-      "Too Big! Image only upto 2mb allowed",
-      (value)=>{
-        if(value instanceof File){
-          return checkIfFilesAreTooBig(value)
-        }
+    .test("FILE_SIZE", "Too Big! Image only upto 2mb allowed", (value) => {
+      if (value instanceof File) {
+        return checkIfFilesAreTooBig(value);
       }
-    ),
+    }),
 });
-
+//Sign up form
 function Signupform() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const imgref:React.MutableRefObject<HTMLInputElement | null> = useRef<HTMLInputElement>(null);
+  const imgref: React.MutableRefObject<HTMLInputElement | null> =
+    useRef<HTMLInputElement>(null);
   const [imgUrl, setImgurl] = useState<string>("")!;
   const [showprevimg, setShowprevimg] = useState(false);
   const [userExist, setUserexist] = useState(false);
+  const [showpassword, setShowPassword] = useState("password");
+  //function redirecting to login
   function navigateToLogin() {
     navigate("/login");
   }
-  function onSubmit(values: Usertype, { resetForm }:FormikHelpers<Usertype>) {
+  //Signup form Submit handler
+  function onSubmit(values: Usertype, { resetForm }: FormikHelpers<Usertype>) {
     let userList: Usertype[] =
       JSON.parse(localStorage.getItem("userList")!) || [];
     setUserexist(false);
     let user = userList.filter((user) => user.email === values.email);
-    console.log(user);
 
     if (user.length != 0) {
       setUserexist(true);
@@ -135,7 +124,6 @@ function Signupform() {
       });
       setTimeout(() => setUserexist(false), 2000);
     } else {
-      console.log("hi");
       values.profile = imgUrl;
       dispatch(signinUser(values));
       navigate("/");
@@ -143,6 +131,14 @@ function Signupform() {
       imgref.current!.value = "";
       resetForm();
       setImgurl("");
+    }
+  }
+  //show-hide password Toggler
+  function togglepassword() {
+    if (showpassword == "password") {
+      setShowPassword("text");
+    } else {
+      setShowPassword("password");
     }
   }
   return (
@@ -166,7 +162,7 @@ function Signupform() {
                   type="file"
                   name="profile"
                   id="profile"
-                  size={0.05 * 1024 * 1024}
+                  // size={2 * 1024 * 1024}
                   hidden
                   className="form-field"
                   onChange={(e) => {
@@ -176,7 +172,7 @@ function Signupform() {
                     let reader = new FileReader();
                     reader.readAsDataURL(e.target.files![0]);
                     reader.addEventListener("load", () => {
-                      if(typeof reader.result ==="string"){
+                      if (typeof reader.result === "string") {
                         setImgurl(reader.result);
                       }
                     });
@@ -212,21 +208,27 @@ function Signupform() {
                   className="form-field"
                   placeholder="Enter your email"
                 />
+                <FontAwesomeIcon icon={"eye-slash"} />
                 <ErrorMessage name="email">
                   {(msg) => <div className="error-message">{msg}</div>}
                 </ErrorMessage>
               </div>
-              <div className="form-control">
+              <div className="form-control password-field">
                 <label htmlFor="password" className="form-label">
                   Password
                 </label>
                 <Field
-                  type="text"
+                  type={showpassword}
                   name="password"
                   id="password"
                   className="form-field"
                   placeholder="Enter Your Password"
                 />
+                <div className="showpassword" onClick={() => togglepassword()}>
+                  <FontAwesomeIcon
+                    icon={showpassword == "text" ? faEyeSlash : faEye}
+                  />
+                </div>
                 <ErrorMessage name="password">
                   {(msg) => <div className="error-message">{msg}</div>}
                 </ErrorMessage>
@@ -236,7 +238,7 @@ function Signupform() {
                   Confirm Password
                 </label>
                 <Field
-                  type="text"
+                  type="password"
                   name="confirmpassword"
                   id="confirmpassword"
                   className="form-field"

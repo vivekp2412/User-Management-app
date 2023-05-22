@@ -1,9 +1,8 @@
-import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import { boolean } from "yup";
 import { logoutUser } from "../../slices/userSlices";
 import "./Home.css";
+import dashboardImage from "../../assets/dashboard.png";
 interface Statetype {
   user: {
     isloggedin: false;
@@ -16,14 +15,23 @@ interface Statetype {
     };
   };
 }
+//Home Page Component
 function Home() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const userData = useSelector((state: Statetype) => state.user.userinfo);
   return (
     <>
       <div className="navbar">
-        <span></span>
+        <div className="dashboard">
+          <img
+            className="dashboard-img"
+            src={dashboardImage}
+            alt="dashboard icon"
+          />
+          <span className="dashboard-title">Dashboard</span>
+        </div>
         <button
           className="logout-btn"
           onClick={() => {

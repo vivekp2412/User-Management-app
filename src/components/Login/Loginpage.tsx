@@ -2,8 +2,7 @@ import image from "../../assets/signupimage.png";
 import Loginform from "./Loginform";
 import "../Signup/Signuppage.css";
 import { useSelector } from "react-redux";
-import { useEffect } from "react";
-import { useNavigate } from "react-router";
+//interface for State
 interface Statetype {
   user: {
     isloggedin: false;
@@ -16,8 +15,8 @@ interface Statetype {
     };
   };
 }
+//Login Page Component
 function Loginpage() {
-  const navigate = useNavigate();
   const isLogged = useSelector((state: Statetype) => state.user.isloggedin);
   return (
     <div className="login-layout">
